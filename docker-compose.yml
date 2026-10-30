@@ -1,0 +1,33 @@
+name: lanhvcl
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lanhvcl
+      POSTGRES_USER: lanhvcl
+      POSTGRES_PASSWORD: lanhvcl
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  tts:
+    build: ./tts-service
+    restart: unless-stopped
+    # chạy cùng uid/gid với user host để file ghi ra Laravel xoá/đọc được
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    environment:
+      DATA_DIR: /data
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      WHISPER_DATASET_MODEL: ${WHISPER_DATASET_MODEL:-medium}
+      VIENEU_PRECISION: ${VIENEU_PRECISION:-}
+    ports:
+      - "127.0.0.1:8100:8100"
+    volumes:
+      - ./storage/app/private:/data
+      - ./tts-service/.cache:/cache
+
+volumes:
+  pgdata:

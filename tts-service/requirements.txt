@@ -1,0 +1,5 @@
+vieneu
+faster-whisper
+fastapi
+uvicorn[standard]
+yt-dlp[default]
