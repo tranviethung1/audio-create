@@ -10,10 +10,13 @@
     </div>
 </div>
 
+<x-bulk-bar id="bulk-voices" :action="route('voices.bulk-destroy')" noun="giọng" />
+
 <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
     <table class="w-full min-w-[760px] text-left text-sm">
         <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+                <th class="w-8 px-3 py-3"><input type="checkbox" form="bulk-voices" data-bulk-all="bulk-voices" aria-label="Chọn tất cả" class="size-4 cursor-pointer"></th>
                 <th class="px-3 py-3 font-medium">Tên giọng</th>
                 <th class="px-3 py-3 font-medium">Ghi chú</th>
                 <th class="px-3 py-3 text-center font-medium">Số mẫu</th>
@@ -25,6 +28,7 @@
         <tbody class="divide-y divide-slate-100">
             @forelse ($voices as $voice)
                 <tr class="hover:bg-slate-50/60">
+                    <td class="px-3 py-3"><input type="checkbox" form="bulk-voices" name="ids[]" value="{{ $voice->id }}" data-bulk-item="bulk-voices" aria-label="Chọn" class="size-4 cursor-pointer"></td>
                     <td class="px-3 py-3 font-medium">{{ $voice->name }}</td>
                     <td class="max-w-xs truncate px-3 py-3 text-slate-500" title="{{ $voice->description }}">{{ $voice->description ?: '—' }}</td>
                     <td class="px-3 py-3 text-center">{{ $voice->samples->count() }}</td>
@@ -49,7 +53,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="px-4 py-10 text-center text-slate-500">Chưa có giọng nào. Bấm “+ Thêm giọng” để tạo giọng đầu tiên.</td></tr>
+                <tr><td colspan="7" class="px-4 py-10 text-center text-slate-500">Chưa có giọng nào. Bấm “+ Thêm giọng” để tạo giọng đầu tiên.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -135,10 +139,12 @@
             <h3 class="text-sm font-semibold text-slate-700">Audio mẫu ({{ $voice->samples->count() }})</h3>
             <a class="btn-ghost btn-sm" href="{{ route('datasets.show', $voice) }}">Chuẩn bị dữ liệu fine-tune →</a>
         </div>
+        <x-bulk-bar :id="'bulk-samples-'.$voice->id" :action="route('voices.samples.bulk-destroy', $voice)" noun="audio mẫu" />
         <div class="overflow-x-auto rounded-lg border border-slate-200">
             <table class="w-full min-w-[780px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                     <tr>
+                        <th class="w-8 px-3 py-2"><input type="checkbox" form="bulk-samples-{{ $voice->id }}" data-bulk-all="bulk-samples-{{ $voice->id }}" aria-label="Chọn tất cả" class="size-4 cursor-pointer"></th>
                         <th class="px-3 py-2 font-medium">File</th>
                         <th class="px-3 py-2 font-medium">Thời lượng</th>
                         <th class="px-3 py-2 font-medium">Nghe cả file</th>
@@ -149,6 +155,7 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($voice->samples as $sample)
                         <tr>
+                            <td class="px-3 py-2"><input type="checkbox" form="bulk-samples-{{ $voice->id }}" name="ids[]" value="{{ $sample->id }}" data-bulk-item="bulk-samples-{{ $voice->id }}" aria-label="Chọn" class="size-4 cursor-pointer"></td>
                             <td class="px-3 py-2">
                                 <div class="max-w-[14rem] truncate" title="{{ $sample->original_name }}">{{ $sample->original_name }}</div>
                                 @if ($voice->primary_sample_id === $sample->id)
@@ -201,7 +208,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-3 py-6 text-center text-slate-500">Chưa có audio mẫu.</td></tr>
+                        <tr><td colspan="6" class="px-3 py-6 text-center text-slate-500">Chưa có audio mẫu.</td></tr>
                     @endforelse
                 </tbody>
             </table>

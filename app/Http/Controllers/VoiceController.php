@@ -68,9 +68,42 @@ class VoiceController extends Controller
     public function destroy(Voice $voice): RedirectResponse
     {
         Storage::deleteDirectory("lanhvcl/samples/{$voice->id}");
+        Storage::deleteDirectory("lanhvcl/datasets/{$voice->id}");
         $voice->delete();
 
         return redirect()->route('voices.index')->with('status', 'Đã xoá giọng.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1', 'ids.*' => 'integer'], ['ids.required' => 'Hãy chọn ít nhất một giọng.'])['ids'];
+
+        $voices = Voice::whereIn('id', $ids)->get();
+        foreach ($voices as $voice) {
+            Storage::deleteDirectory("lanhvcl/samples/{$voice->id}");
+            Storage::deleteDirectory("lanhvcl/datasets/{$voice->id}");
+            $voice->delete();
+        }
+
+        return redirect()->route('voices.index')->with('status', "Đã xoá {$voices->count()} giọng.");
+    }
+
+    public function bulkDestroySamples(Request $request, Voice $voice): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1', 'ids.*' => 'integer'], ['ids.required' => 'Hãy chọn ít nhất một audio mẫu.'])['ids'];
+
+        $samples = $voice->samples()->whereIn('id', $ids)->get();
+        foreach ($samples as $sample) {
+            $this->forgetClips($sample);
+            Storage::delete($sample->path);
+            $sample->delete();
+        }
+
+        if (! $voice->samples()->whereKey($voice->primary_sample_id)->exists()) {
+            $voice->update(['primary_sample_id' => $voice->samples()->value('id')]);
+        }
+
+        return back()->with('status', "Đã xoá {$samples->count()} audio mẫu.")->with('open', "voice-manage-{$voice->id}");
     }
 
     public function storeSamples(Request $request, Voice $voice, TtsClient $tts): RedirectResponse

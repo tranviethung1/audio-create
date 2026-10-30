@@ -121,6 +121,21 @@ class GenerationController extends Controller
         return back()->with('status', 'Đã xoá audio.');
     }
 
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1', 'ids.*' => 'integer'], ['ids.required' => 'Hãy chọn ít nhất một audio.'])['ids'];
+
+        $items = Generation::whereIn('id', $ids)->get();
+        foreach ($items as $generation) {
+            if ($generation->path) {
+                Storage::delete($generation->path);
+            }
+            $generation->delete();
+        }
+
+        return back()->with('status', "Đã xoá {$items->count()} audio.");
+    }
+
     /** @return array{0: ?int, 1: ?string, 2: string} */
     private function resolveVoice(string $value): array
     {

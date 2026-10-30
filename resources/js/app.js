@@ -21,6 +21,7 @@ function startLiveList(el) {
                 const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 if (res.ok) {
                     el.innerHTML = await res.text();
+                    bulkRefreshAll(el);
                 }
             } catch (_) {
                 /* mạng lỗi thoáng qua: thử lại ở lượt sau */
@@ -94,6 +95,81 @@ const autoOpen = document.body.dataset.openModal;
 if (autoOpen) {
     openModal(autoOpen);
 }
+
+// ---- Chọn nhiều dòng để xoá hàng loạt ---------------------------------------
+// Checkbox gắn vào form rỗng bằng thuộc tính form="<id>". Lưu lựa chọn trong bộ nhớ
+// để không bị mất khi danh sách tự làm mới (live list).
+
+const bulkSelected = {};
+const bulkSet = (id) => (bulkSelected[id] ??= new Set());
+const q = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+function bulkRefresh(id) {
+    const items = q(`[data-bulk-item="${id}"]`);
+    const set = bulkSet(id);
+    const present = new Set(items.map((i) => i.value));
+    [...set].forEach((v) => !present.has(v) && set.delete(v));
+    items.forEach((i) => {
+        i.checked = set.has(i.value);
+        i.closest('tr')?.classList.toggle('bg-indigo-50/60', i.checked);
+    });
+
+    const n = set.size;
+    const bar = document.querySelector(`[data-bulk-bar="${id}"]`);
+    if (bar) {
+        bar.hidden = n === 0;
+        bar.querySelector('[data-bulk-count]').textContent = n;
+    }
+    q(`[data-bulk-all="${id}"]`).forEach((all) => {
+        all.checked = n > 0 && n === items.length;
+        all.indeterminate = n > 0 && n < items.length;
+    });
+}
+
+function bulkRefreshAll(root = document) {
+    q('[data-bulk-bar]', root).forEach((bar) => bulkRefresh(bar.dataset.bulkBar));
+}
+
+document.addEventListener('change', (e) => {
+    const item = e.target.closest?.('[data-bulk-item]');
+    if (item) {
+        const id = item.dataset.bulkItem;
+        item.checked ? bulkSet(id).add(item.value) : bulkSet(id).delete(item.value);
+        bulkRefresh(id);
+        return;
+    }
+    const all = e.target.closest?.('[data-bulk-all]');
+    if (all) {
+        const id = all.dataset.bulkAll;
+        const set = bulkSet(id);
+        set.clear();
+        if (all.checked) {
+            q(`[data-bulk-item="${id}"]`).forEach((i) => set.add(i.value));
+        }
+        bulkRefresh(id);
+    }
+});
+
+document.addEventListener('click', (e) => {
+    const clear = e.target.closest?.('[data-bulk-clear]');
+    if (clear) {
+        bulkSet(clear.dataset.bulkClear).clear();
+        bulkRefresh(clear.dataset.bulkClear);
+    }
+});
+
+// Trình duyệt có thể khôi phục trạng thái tick khi quay lại trang
+q('[data-bulk-item]:checked').forEach((i) => bulkSet(i.dataset.bulkItem).add(i.value));
+bulkRefreshAll();
+
+document.addEventListener('submit', (e) => {
+    const tpl = e.target.dataset?.bulkConfirm;
+    if (!tpl) return;
+    const n = bulkSet(e.target.id).size;
+    if (n === 0 || !confirm(tpl.replace('{n}', n))) {
+        e.preventDefault();
+    }
+});
 
 // Xác nhận trước khi xoá (ủy quyền sự kiện nên cũng chạy với phần tải lại bằng JS)
 document.addEventListener('submit', (e) => {

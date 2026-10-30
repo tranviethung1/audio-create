@@ -83,4 +83,13 @@ class TranscriptionController extends Controller
 
         return redirect()->route('transcriptions.index')->with('status', 'Đã xoá.');
     }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1', 'ids.*' => 'integer'], ['ids.required' => 'Hãy chọn ít nhất một video.'])['ids'];
+
+        $count = Transcription::whereIn('id', $ids)->delete();
+
+        return redirect()->route('transcriptions.index')->with('status', "Đã xoá {$count} video.");
+    }
 }

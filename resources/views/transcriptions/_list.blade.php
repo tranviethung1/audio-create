@@ -7,10 +7,13 @@
     ];
 @endphp
 
+<x-bulk-bar id="bulk-transcriptions" :action="route('transcriptions.bulk-destroy')" noun="video" />
+
 <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
     <table class="w-full min-w-[880px] text-left text-sm">
         <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+                <th class="w-8 px-3 py-3"><input type="checkbox" form="bulk-transcriptions" data-bulk-all="bulk-transcriptions" aria-label="Chọn tất cả" class="size-4 cursor-pointer"></th>
                 <th class="px-3 py-3 font-medium">Video</th>
                 <th class="px-3 py-3 font-medium">Kênh</th>
                 <th class="px-3 py-3 font-medium">Thời lượng</th>
@@ -23,6 +26,7 @@
         <tbody class="divide-y divide-slate-100">
             @forelse ($transcriptions as $t)
                 <tr class="align-middle hover:bg-slate-50/60" @if (! $t->isFinished()) data-pending="1" @endif>
+                    <td class="px-3 py-3"><input type="checkbox" form="bulk-transcriptions" name="ids[]" value="{{ $t->id }}" data-bulk-item="bulk-transcriptions" aria-label="Chọn" class="size-4 cursor-pointer"></td>
                     <td class="max-w-sm px-3 py-3">
                         <div class="flex items-center gap-3">
                             @if ($t->thumbnail)
@@ -58,7 +62,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="px-4 py-10 text-center text-slate-500">Chưa có video nào được import. Bấm “+ Import link YouTube” để bắt đầu.</td></tr>
+                <tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">Chưa có video nào được import. Bấm “+ Import link YouTube” để bắt đầu.</td></tr>
             @endforelse
         </tbody>
     </table>

@@ -12,6 +12,8 @@ Route::get('/voices', [VoiceController::class, 'index'])->name('voices.index');
 Route::post('/voices', [VoiceController::class, 'store'])->name('voices.store');
 Route::put('/voices/{voice}', [VoiceController::class, 'update'])->name('voices.update');
 Route::delete('/voices/{voice}', [VoiceController::class, 'destroy'])->name('voices.destroy');
+Route::delete('/voices', [VoiceController::class, 'bulkDestroy'])->name('voices.bulk-destroy');
+Route::delete('/voices/{voice}/samples', [VoiceController::class, 'bulkDestroySamples'])->name('voices.samples.bulk-destroy');
 Route::post('/voices/{voice}/samples', [VoiceController::class, 'storeSamples'])->name('voices.samples.store');
 Route::delete('/voice-samples/{sample}', [VoiceController::class, 'destroySample'])->name('voices.samples.destroy');
 Route::put('/voice-samples/{sample}/clip', [VoiceController::class, 'updateClip'])->name('voices.samples.clip.update');
@@ -33,6 +35,7 @@ Route::get('/generations/{generation}/audio', [GenerationController::class, 'aud
 Route::get('/generations/{generation}/download', [GenerationController::class, 'download'])->name('generations.download');
 Route::post('/generations/{generation}/retry', [GenerationController::class, 'retry'])->name('generations.retry');
 Route::delete('/generations/{generation}', [GenerationController::class, 'destroy'])->name('generations.destroy');
+Route::delete('/generations', [GenerationController::class, 'bulkDestroy'])->name('generations.bulk-destroy');
 
 Route::get('/youtube', [TranscriptionController::class, 'index'])->name('transcriptions.index');
 Route::get('/youtube/list', [TranscriptionController::class, 'list'])->name('transcriptions.list');
@@ -41,3 +44,4 @@ Route::get('/youtube/{transcription}', [TranscriptionController::class, 'show'])
 Route::put('/youtube/{transcription}', [TranscriptionController::class, 'update'])->name('transcriptions.update');
 Route::post('/youtube/{transcription}/retry', [TranscriptionController::class, 'retry'])->name('transcriptions.retry');
 Route::delete('/youtube/{transcription}', [TranscriptionController::class, 'destroy'])->name('transcriptions.destroy');
+Route::delete('/youtube', [TranscriptionController::class, 'bulkDestroy'])->name('transcriptions.bulk-destroy');

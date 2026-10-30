@@ -7,10 +7,13 @@
     ];
 @endphp
 
+<x-bulk-bar id="bulk-generations" :action="route('generations.bulk-destroy')" noun="audio" />
+
 <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
     <table class="w-full min-w-[880px] text-left text-sm">
         <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+                <th class="w-8 px-3 py-3"><input type="checkbox" form="bulk-generations" data-bulk-all="bulk-generations" aria-label="Chọn tất cả" class="size-4 cursor-pointer"></th>
                 <th class="px-3 py-3 font-medium">Tiêu đề</th>
                 <th class="px-3 py-3 font-medium">Giọng</th>
                 <th class="px-3 py-3 font-medium">Trạng thái</th>
@@ -23,6 +26,7 @@
         <tbody class="divide-y divide-slate-100">
             @forelse ($generations as $g)
                 <tr class="align-middle hover:bg-slate-50/60" @if (! $g->isFinished()) data-pending="1" @endif>
+                    <td class="px-3 py-3"><input type="checkbox" form="bulk-generations" name="ids[]" value="{{ $g->id }}" data-bulk-item="bulk-generations" aria-label="Chọn" class="size-4 cursor-pointer"></td>
                     <td class="max-w-xs px-3 py-3">
                         <div class="truncate font-medium" title="{{ $g->title }}">{{ $g->title }}</div>
                         <button type="button" class="mt-0.5 text-xs text-indigo-600 hover:underline"
@@ -66,7 +70,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="px-4 py-10 text-center text-slate-500">Chưa có audio nào. Bấm “+ Tạo audio mới” để bắt đầu.</td></tr>
+                <tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">Chưa có audio nào. Bấm “+ Tạo audio mới” để bắt đầu.</td></tr>
             @endforelse
         </tbody>
     </table>
